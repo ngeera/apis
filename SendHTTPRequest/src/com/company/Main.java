@@ -4,9 +4,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import javax.net.ssl.HttpsURLConnection;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class Main {
 	
@@ -14,7 +21,18 @@ public class Main {
 	private static HttpsURLConnection connection;
 
 	public static void main(String[] args) {
-		//  Method 1: java.net.HttpURLConnection
+		
+		
+		System.out.println("Calling Method 1");
+		method1();
+		 
+			//System.out.println("Calling Method 2");
+			// method2();
+
+	}
+	
+	public static void method1() {
+	//  Method 1: java.net.HttpURLConnection
 		
 		BufferedReader reader;
 		String line;
@@ -57,7 +75,8 @@ public class Main {
 				
 			}
 			
-			System.out.println(responseContent.toString());
+		//	System.out.println(responseContent.toString());
+			parse(responseContent.toString());
 			
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -69,7 +88,39 @@ public class Main {
 			connection.disconnect();
 			
 		}
-
+		
+	}
+	
+	public static void method2() {
+	//  Method 2: java.net.http.HttpClient
+		System.out.println("before method 2");
+		HttpClient client = HttpClient.newHttpClient();
+		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("https://jsonplaceholder.typicode.com/albums")).build();
+		client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+		.thenApply(HttpResponse::body)
+		.thenAccept(System.out::println)
+		//.thenApply(Main::parse)
+		.join();
 	}
 
+	public static String parse(String responseBody) {
+		
+		JSONArray albums = new JSONArray(responseBody);
+		
+		for(int i=0; i<albums.length(); i++) {
+			
+			JSONObject album = albums.getJSONObject(i);
+			
+			
+			System.out.println(album);
+			/*int id = album.getInt("id");
+			int userId = album.getInt("userId");
+			String title = album.getString("title");
+			
+			System.out.println(id + "  "+userId + "  " + title); */
+			
+		}
+		
+		return null;
+	}
 }
